@@ -13,10 +13,25 @@
     
     <style>
         body { 
-            background-color: #f8f9fa; 
+            /* เพิ่มรูปภาพพื้นหลังตามที่ขอ */
+            background-image: url('https://lh3.googleusercontent.com/d/1lBTYv1ZEKLAJEaXyEKCW4hdoMLJ2odJC');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            
             font-family: 'Sarabun', 'Segoe UI', Tahoma, sans-serif; 
         }
+        
         .container { max-width: 1200px; margin-top: 30px; margin-bottom: 50px; }
+        
+        /* เพิ่มพื้นหลังสีขาวโปร่งแสงให้ Container เพื่อให้กลืนกับพื้นหลังแต่ยังอ่านง่าย */
+        .content-wrapper {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
         
         /* ตกแต่งส่วนค้นหาให้เหมือนภาพต้นฉบับ */
         .search-card { border: 1px solid #e2e8f0; border-radius: 8px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
@@ -40,78 +55,78 @@
 <body>
 
 <div class="container">
-    
-    <!-- กล่องค้นหา -->
-    <div class="search-card">
-        <div class="search-header">
-            <div><i class="bi bi-search me-2"></i>ค้นหาอัตราค่านำหมาย</div>
-            <i class="bi bi-chevron-up text-muted"></i>
+    <div class="content-wrapper">
+        <!-- กล่องค้นหา -->
+        <div class="search-card">
+            <div class="search-header">
+                <div><i class="bi bi-search me-2"></i>ค้นหาอัตราค่านำหมาย</div>
+                <i class="bi bi-chevron-up text-muted"></i>
+            </div>
+            <div class="search-body">
+                <!-- Alert แจ้งเตือน -->
+                <div class="alert-info-custom mb-3 d-flex align-items-center">
+                    <i class="bi bi-info-circle me-2 fs-5"></i>
+                    <span>ท่านสามารถเริ่มต้นค้นหาอัตราค่านำหมายได้อย่างรวดเร็วด้วยการพิมพ์ <span class="badge-pink">ชื่อศาล</span> หรือ <span class="badge-green">ชื่อจังหวัด</span></span>
+                </div>
+
+                <!-- ช่องกรอกข้อมูล -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <input type="text" id="inputCourt" class="form-control" placeholder="❖ พิมพ์/เลือกชื่อศาลที่ต้องการค้นหา">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" id="inputProv" class="form-control" placeholder="❖ พิมพ์/เลือกชื่อจังหวัด">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" id="inputAmphur" class="form-control" placeholder="❖ พิมพ์/เลือกชื่อเขต/อำเภอ">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" id="inputTambon" class="form-control" placeholder="❖ พิมพ์/เลือกชื่อแขวง/ตำบล">
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button class="btn btn-primary px-5 rounded-pill shadow-sm" onclick="searchData()">ค้นหาข้อมูล</button>
+                </div>
+            </div>
         </div>
-        <div class="search-body">
-            <!-- Alert แจ้งเตือน -->
-            <div class="alert-info-custom mb-3 d-flex align-items-center">
-                <i class="bi bi-info-circle me-2 fs-5"></i>
-                <span>ท่านสามารถเริ่มต้นค้นหาอัตราค่านำหมายได้อย่างรวดเร็วด้วยการพิมพ์ <span class="badge-pink">ชื่อศาล</span> หรือ <span class="badge-green">ชื่อจังหวัด</span></span>
-            </div>
 
-            <!-- ช่องกรอกข้อมูล -->
-            <div class="row g-3 mb-4">
-                <div class="col-12">
-                    <input type="text" id="inputCourt" class="form-control" placeholder="❖ พิมพ์/เลือกชื่อศาลที่ต้องการค้นหา">
-                </div>
-                <div class="col-md-4">
-                    <input type="text" id="inputProv" class="form-control" placeholder="❖ พิมพ์/เลือกชื่อจังหวัด">
-                </div>
-                <div class="col-md-4">
-                    <input type="text" id="inputAmphur" class="form-control" placeholder="❖ พิมพ์/เลือกชื่อเขต/อำเภอ">
-                </div>
-                <div class="col-md-4">
-                    <input type="text" id="inputTambon" class="form-control" placeholder="❖ พิมพ์/เลือกชื่อแขวง/ตำบล">
-                </div>
-            </div>
-            
-            <div class="text-center">
-                <button class="btn btn-primary px-5 rounded-pill shadow-sm" onclick="searchData()">ค้นหาข้อมูล</button>
-            </div>
+        <!-- ส่วนแสดงตาราง -->
+        <div class="table-header-title">
+            <i class="bi bi-layout-text-window me-2"></i>รายการอัตราค่านำหมาย
+            <span id="resultCount" class="text-muted fs-6 fw-normal ms-3"></span>
         </div>
-    </div>
-
-    <!-- ส่วนแสดงตาราง -->
-    <div class="table-header-title">
-        <i class="bi bi-layout-text-window me-2"></i>รายการอัตราค่านำหมาย
-        <span id="resultCount" class="text-muted fs-6 fw-normal ms-3"></span>
-    </div>
-    
-    <div class="table-responsive bg-white border rounded shadow-sm p-3">
-        <table class="table table-hover mb-0">
-            <thead>
-                <tr>
-                    <th>ลำดับที่</th>
-                    <th>ศาล</th>
-                    <th>จังหวัด</th>
-                    <th>เขต/อำเภอ</th>
-                    <th>แขวง/ตำบล</th>
-                    <th>หมู่</th>
-                    <th>อัตรา</th>
-                    <th>วันที่ประกาศ</th>
-                    <th style="min-width: 250px;">หมายเหตุ</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                <tr>
-                    <td colspan="9" class="text-center text-muted py-4">กรุณาระบุข้อมูลเพื่อค้นหา</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
+        
+        <div class="table-responsive bg-white border rounded shadow-sm p-3">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>ลำดับที่</th>
+                        <th>ศาล</th>
+                        <th>จังหวัด</th>
+                        <th>เขต/อำเภอ</th>
+                        <th>แขวง/ตำบล</th>
+                        <th>หมู่</th>
+                        <th>อัตรา</th>
+                        <th>วันที่ประกาศ</th>
+                        <th style="min-width: 250px;">หมายเหตุ</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">กรุณาระบุข้อมูลเพื่อค้นหา</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div> <!-- สิ้นสุด content-wrapper -->
 </div>
 
 <script>
-    // 🔴 นำ URL ของ Web App จาก Google Apps Script มาใส่ที่นี่ 🔴
+    // URL ของ Web App จาก Google Apps Script
     const API_URL = "https://script.google.com/macros/s/AKfycbyio1zeacR3PRwpdjtkie7_F5w46Sw41N0mj0RL30Ep-Movx1ybeaS2MlYp1ftaIQALcg/exec";
 
-    // ฟังก์ชันแปลงรูปแบบวันที่ (จาก 2026-02-16T... เป็น 16/02/2569)
+    // ฟังก์ชันแปลงรูปแบบวันที่
     function formatDate(dateString) {
         if (!dateString) return '-';
         const d = new Date(dateString);
@@ -122,13 +137,11 @@
     }
 
     function searchData() {
-        // ดึงค่าจากทั้ง 4 ช่องมาต่อกัน
         const court = document.getElementById("inputCourt").value.trim();
         const prov = document.getElementById("inputProv").value.trim();
         const amphur = document.getElementById("inputAmphur").value.trim();
         const tambon = document.getElementById("inputTambon").value.trim();
         
-        // รวบรวมคำค้นหาเข้าด้วยกัน โดยเว้นวรรค
         const searchTerms = [court, prov, amphur, tambon].filter(val => val !== "").join(" ");
 
         if (searchTerms === "") {
@@ -180,7 +193,6 @@
             });
     }
 
-    // ให้ผู้ใช้สามารถกด Enter เพื่อค้นหาได้ในทุกช่อง
     const inputs = ["inputCourt", "inputProv", "inputAmphur", "inputTambon"];
     inputs.forEach(id => {
         document.getElementById(id).addEventListener("keypress", function(event) {
