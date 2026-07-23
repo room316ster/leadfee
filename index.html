@@ -3,127 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบค้นหาอัตราค่านำหมาย (ข้อมูลสำรอง)</title>
-    <!-- นำเข้า Bootstrap เพื่อความสวยงามและจัด Layout -->
+    <title>ระบบค้นหาอัตราค่านำหมาย</title>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- นำเข้า SweetAlert2 สำหรับแจ้งเตือน -->
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
-        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .container { max-width: 900px; margin-top: 50px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .table-responsive { max-height: 500px; overflow-y: auto; }
-        thead { position: sticky; top: 0; background-color: #0d6efd; color: white; z-index: 1; }
+        body { 
+            background-color: #f8f9fa; 
+            font-family: 'Sarabun', 'Segoe UI', Tahoma, sans-serif; 
+        }
+        .container { max-width: 1200px; margin-top: 30px; margin-bottom: 50px; }
+        
+        /* ตกแต่งส่วนค้นหาให้เหมือนภาพต้นฉบับ */
+        .search-card { border: 1px solid #e2e8f0; border-radius: 8px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .search-header { border-bottom: 1px solid #e2e8f0; padding: 15px 20px; color: #1e293b; font-weight: 600; display: flex; justify-content: space-between; align-items: center;}
+        .search-body { padding: 20px; }
+        
+        .alert-info-custom { background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; border-radius: 6px; padding: 12px 16px; font-size: 0.95rem; }
+        .badge-pink { background-color: #ffe4e6; color: #e11d48; padding: 4px 8px; border-radius: 4px; font-weight: normal;}
+        .badge-green { background-color: #dcfce7; color: #16a34a; padding: 4px 8px; border-radius: 4px; font-weight: normal;}
+        
+        .form-control { border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; color: #64748b; }
+        .form-control::placeholder { color: #94a3b8; }
+        .form-control:focus { border-color: #3b82f6; box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25); }
+
+        /* ตกแต่งตาราง */
+        .table-header-title { font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-bottom: 15px; margin-top: 30px; }
+        .table thead th { background-color: #f8fafc; color: #475569; font-weight: 600; border-bottom-width: 1px; font-size: 0.9rem; white-space: nowrap;}
+        .table tbody td { font-size: 0.9rem; vertical-align: middle; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 class="text-center mb-4">🔍 ระบบค้นหาอัตราค่านำหมาย (ระบบสำรอง)</h2>
     
-    <!-- ช่องค้นหา -->
-    <div class="input-group mb-4">
-        <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="พิมพ์ชื่อศาล, จังหวัด, เขต หรือ แขวง...">
-        <button class="btn btn-primary px-4" onclick="searchData()">ค้นหา</button>
+    <!-- กล่องค้นหา -->
+    <div class="search-card">
+        <div class="search-header">
+            <div><i class="bi bi-search me-2"></i>ค้นหาอัตราค่านำหมาย</div>
+            <i class="bi bi-chevron-up text-muted"></i>
+        </div>
+        <div class="search-body">
+            <!-- Alert แจ้งเตือน -->
+            <div class="alert-info-custom mb-3 d-flex align-items-center">
+                <i class="bi bi-info-circle me-2 fs-5"></i>
+                <span>ท่านสามารถเริ่มต้นค้นหาอัตราค่านำหมายได้อย่างรวดเร็วด้วยการพิมพ์ <span class="badge-pink">ชื่อศาล</span> หรือ <span class="badge-green">ชื่อจังหวัด</span></span>
+            </div>
+
+            <!-- ช่องกรอกข้อมูล -->
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <input type="text" id="inputCourt" class="form-control" placeholder="❖ พิมพ์/เลือกชื่อศาลที่ต้องการค้นหา">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" id="inputProv" class="form-control" placeholder="❖ พิมพ์/เลือกชื่อจังหวัด">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" id="inputAmphur" class="form-control" placeholder="❖ พิมพ์/เลือกชื่อเขต/อำเภอ">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" id="inputTambon" class="form-control" placeholder="❖ พิมพ์/เลือกชื่อแขวง/ตำบล">
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <button class="btn btn-primary px-5 rounded-pill shadow-sm" onclick="searchData()">ค้นหาข้อมูล</button>
+            </div>
+        </div>
     </div>
 
-    <!-- แสดงจำนวนรายการ -->
-    <div class="mb-2 text-muted" id="resultCount"></div>
-
-    <!-- ตารางแสดงผล -->
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover">
+    <!-- ส่วนแสดงตาราง -->
+    <div class="table-header-title">
+        <i class="bi bi-layout-text-window me-2"></i>รายการอัตราค่านำหมาย
+        <span id="resultCount" class="text-muted fs-6 fw-normal ms-3"></span>
+    </div>
+    
+    <div class="table-responsive bg-white border rounded shadow-sm p-3">
+        <table class="table table-hover mb-0">
             <thead>
                 <tr>
+                    <th>ลำดับที่</th>
                     <th>ศาล</th>
                     <th>จังหวัด</th>
-                    <th>อำเภอ/เขต</th>
-                    <th>ตำบล/แขวง</th>
-                    <th>อัตรา (บาท)</th>
+                    <th>เขต/อำเภอ</th>
+                    <th>แขวง/ตำบล</th>
+                    <th>หมู่</th>
+                    <th>อัตรา</th>
+                    <th>วันที่ประกาศ</th>
+                    <th style="min-width: 250px;">หมายเหตุ</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <!-- ข้อมูลจะถูกดึงมาแสดงตรงนี้ -->
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">กรุณาระบุข้อมูลเพื่อค้นหา</td>
+                </tr>
             </tbody>
         </table>
     </div>
+
 </div>
 
 <script>
     // 🔴 นำ URL ของ Web App จาก Google Apps Script มาใส่ที่นี่ 🔴
     const API_URL = "https://script.google.com/macros/s/AKfycbyio1zeacR3PRwpdjtkie7_F5w46Sw41N0mj0RL30Ep-Movx1ybeaS2MlYp1ftaIQALcg/exec";
 
-    // ฟังก์ชันค้นหาข้อมูล
+    // ฟังก์ชันแปลงรูปแบบวันที่ (จาก 2026-02-16T... เป็น 16/02/2569)
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        const d = new Date(dateString);
+        if (isNaN(d)) return dateString;
+        return d.getDate().toString().padStart(2, '0') + '/' + 
+               (d.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+               (d.getFullYear() + 543);
+    }
+
     function searchData() {
-        // ดึงข้อความที่พิมพ์ และตัดช่องว่างซ้ายขวาออก (trim)
-        const keyword = document.getElementById("searchInput").value.trim();
+        // ดึงค่าจากทั้ง 4 ช่องมาต่อกัน
+        const court = document.getElementById("inputCourt").value.trim();
+        const prov = document.getElementById("inputProv").value.trim();
+        const amphur = document.getElementById("inputAmphur").value.trim();
+        const tambon = document.getElementById("inputTambon").value.trim();
         
-        // 1. ตรวจสอบว่าผู้ใช้พิมพ์ข้อความหรือยัง
-        if (keyword === "") {
-            Swal.fire({
-                icon: 'warning',
-                title: 'แจ้งเตือน',
-                text: 'กรุณาพิมพ์ชื่อศาล หรือเขต/อำเภอ ที่ต้องการค้นหาก่อนครับ'
-            });
-            return; // หยุดการทำงาน ไม่ส่ง Request ไปที่ Google Sheet
+        // รวบรวมคำค้นหาเข้าด้วยกัน โดยเว้นวรรค
+        const searchTerms = [court, prov, amphur, tambon].filter(val => val !== "").join(" ");
+
+        if (searchTerms === "") {
+            Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณาระบุข้อมูลอย่างน้อย 1 ช่อง เพื่อค้นหาครับ' });
+            return;
         }
         
-        // เรียกใช้ SweetAlert2 แสดงสถานะโหลด
         Swal.fire({
             title: 'กำลังค้นหาข้อมูล...',
             allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
+            didOpen: () => { Swal.showLoading(); }
         });
 
-        // ดึงข้อมูลจาก Google Sheets ผ่าน Web App API เฉพาะคำที่ค้นหา
-        fetch(API_URL + "?q=" + encodeURIComponent(keyword))
+        fetch(API_URL + "?q=" + encodeURIComponent(searchTerms))
             .then(response => response.json())
             .then(data => {
-                Swal.close(); // ปิดหน้าต่างโหลด
-                
+                Swal.close();
                 const tableBody = document.getElementById("tableBody");
-                tableBody.innerHTML = ""; // ล้างข้อมูลเก่า
+                tableBody.innerHTML = ""; 
                 
                 if (data.status === "success" && data.data && data.data.length > 0) {
-                    document.getElementById("resultCount").innerText = "พบข้อมูลทั้งหมด " + data.total + " รายการ";
+                    document.getElementById("resultCount").innerText = `(พบ ${data.total} รายการ)`;
                     
-                    // วนลูปสร้างแถวตาราง
-                    data.data.forEach(item => {
+                    data.data.forEach((item, index) => {
                         let row = `<tr>
+                            <td class="text-center">${index + 1}</td>
                             <td>${item.court_name || '-'}</td>
                             <td>${item.prov_name || '-'}</td>
                             <td>${item.amphur_name || '-'}</td>
                             <td>${item.tambon_name || '-'}</td>
-                            <td class="text-primary fw-bold">${item.amtsentnotice || '0'}</td>
+                            <td>${item.moo || '-'}</td>
+                            <td class="text-primary fw-bold">${item.amtsentnotice ? parseFloat(item.amtsentnotice).toLocaleString() : '0'}</td>
+                            <td>${formatDate(item.start_date)}</td>
+                            <td class="text-muted" style="font-size: 0.85rem;">${item.remark || '-'}</td>
                         </tr>`;
                         tableBody.innerHTML += row;
                     });
                 } else if (data.status === "error") {
-                    // กรณีฝั่ง Google Sheet แจ้ง Error กลับมา
                     document.getElementById("resultCount").innerText = "";
-                    Swal.fire('ข้อผิดพลาดจากฐานข้อมูล', data.message, 'error');
+                    Swal.fire('ข้อผิดพลาด', data.message, 'error');
                 } else {
-                    document.getElementById("resultCount").innerText = "";
-                    tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">ไม่พบข้อมูลที่ตรงกับ "${keyword}"</td></tr>`;
+                    document.getElementById("resultCount").innerText = "(พบ 0 รายการ)";
+                    tableBody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">ไม่พบข้อมูลที่ค้นหา</td></tr>`;
                 }
             })
             .catch(error => {
                 Swal.close();
                 Swal.fire('ข้อผิดพลาด!', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
-                console.error('Error:', error);
             });
     }
 
-    // 2. ปิดการโหลดข้อมูลอัตโนมัติ (ลบคำสั่ง window.onload เดิมออก)
-    // การปล่อยว่างไว้จะทำให้หน้าเว็บเริ่มต้นมาแบบคลีนๆ รอให้คนกดปุ่มค้นหาเอง
-
-    // 3. เพิ่มความสะดวก: ให้กดปุ่ม Enter ที่คีย์บอร์ดเพื่อค้นหาได้เลย ไม่ต้องใช้เมาส์คลิกปุ่ม
-    document.getElementById("searchInput").addEventListener("keypress", function(event) {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            searchData();
-        }
+    // ให้ผู้ใช้สามารถกด Enter เพื่อค้นหาได้ในทุกช่อง
+    const inputs = ["inputCourt", "inputProv", "inputAmphur", "inputTambon"];
+    inputs.forEach(id => {
+        document.getElementById(id).addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                searchData();
+            }
+        });
     });
 </script>
 
