@@ -4,36 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบค้นหาอัตราค่านำหมาย</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
         body { 
-            /* เพิ่มรูปภาพพื้นหลังตามที่ขอ */
             background-image: url('https://lh3.googleusercontent.com/d/1lBTYv1ZEKLAJEaXyEKCW4hdoMLJ2odJC');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             background-repeat: no-repeat;
-            
             font-family: 'Sarabun', 'Segoe UI', Tahoma, sans-serif; 
         }
+        .container { max-width: 1200px; margin-top: 30px; margin-bottom: 30px; }
+        .content-wrapper { background-color: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); min-height: 85vh; display: flex; flex-direction: column; }
         
-        .container { max-width: 1200px; margin-top: 30px; margin-bottom: 50px; }
-        
-        /* เพิ่มพื้นหลังสีขาวโปร่งแสงให้ Container เพื่อให้กลืนกับพื้นหลังแต่ยังอ่านง่าย */
-        .content-wrapper {
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
-        
-        /* ตกแต่งส่วนค้นหาให้เหมือนภาพต้นฉบับ */
         .search-card { border: 1px solid #e2e8f0; border-radius: 8px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .search-header { border-bottom: 1px solid #e2e8f0; padding: 15px 20px; color: #1e293b; font-weight: 600; display: flex; justify-content: space-between; align-items: center;}
         .search-body { padding: 20px; }
@@ -46,16 +32,29 @@
         .form-control::placeholder { color: #94a3b8; }
         .form-control:focus { border-color: #3b82f6; box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25); }
 
-        /* ตกแต่งตาราง */
         .table-header-title { font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-bottom: 15px; margin-top: 30px; }
         .table thead th { background-color: #f8fafc; color: #475569; font-weight: 600; border-bottom-width: 1px; font-size: 0.9rem; white-space: nowrap;}
         .table tbody td { font-size: 0.9rem; vertical-align: middle; }
+
+        /* ดัน Footer ให้อยู่ล่างสุดเสมอ */
+        .footer-wrapper { margin-top: auto; padding-top: 30px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="content-wrapper">
+        
+        <!-- แถบแสดงเวลา และ ปุ่มอัปเดต -->
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+            <span class="text-muted" style="font-size: 0.85rem;" id="lastUpdatedText">
+                <i class="bi bi-clock-history me-1"></i>อัปเดตล่าสุด: กำลังตรวจสอบ...
+            </span>
+            <button class="btn btn-outline-primary btn-sm" onclick="forceUpdateAPI()">
+                <i class="bi bi-cloud-download me-1"></i> ซิงค์ข้อมูล API ล่าสุด
+            </button>
+        </div>
+
         <!-- กล่องค้นหา -->
         <div class="search-card">
             <div class="search-header">
@@ -63,13 +62,11 @@
                 <i class="bi bi-chevron-up text-muted"></i>
             </div>
             <div class="search-body">
-                <!-- Alert แจ้งเตือน -->
                 <div class="alert-info-custom mb-3 d-flex align-items-center">
                     <i class="bi bi-info-circle me-2 fs-5"></i>
                     <span>ท่านสามารถเริ่มต้นค้นหาอัตราค่านำหมายได้อย่างรวดเร็วด้วยการพิมพ์ <span class="badge-pink">ชื่อศาล</span> หรือ <span class="badge-green">ชื่อจังหวัด</span></span>
                 </div>
 
-                <!-- ช่องกรอกข้อมูล -->
                 <div class="row g-3 mb-4">
                     <div class="col-12">
                         <input type="text" id="inputCourt" class="form-control" placeholder="❖ พิมพ์/เลือกชื่อศาลที่ต้องการค้นหา">
@@ -97,7 +94,7 @@
             <span id="resultCount" class="text-muted fs-6 fw-normal ms-3"></span>
         </div>
         
-        <div class="table-responsive bg-white border rounded shadow-sm p-3">
+        <div class="table-responsive bg-white border rounded shadow-sm p-3 mb-4">
             <table class="table table-hover mb-0">
                 <thead>
                     <tr>
@@ -119,12 +116,57 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Footer เครดิตผู้พัฒนา -->
+        <div class="footer-wrapper text-center">
+            <p class="text-muted mb-0" style="font-size: 0.85rem; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
+                <i class="bi bi-code-slash me-1"></i> พัฒนาโดยนายวีระยุทธ ประชุมรักษ์ พนักงานคอมพิวเตอร์ประจำศาลแขวงอุบลราชธานี
+            </p>
+        </div>
+
     </div> <!-- สิ้นสุด content-wrapper -->
 </div>
 
 <script>
-    // URL ของ Web App จาก Google Apps Script
+    // URL ของ Web App จาก Google Apps Script 
     const API_URL = "https://script.google.com/macros/s/AKfycbyio1zeacR3PRwpdjtkie7_F5w46Sw41N0mj0RL30Ep-Movx1ybeaS2MlYp1ftaIQALcg/exec";
+
+    // ฟังก์ชันดึงเวลาอัปเดตล่าสุดตอนเปิดหน้าเว็บ
+    function checkLastUpdate() {
+        fetch(API_URL + "?action=info")
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    document.getElementById("lastUpdatedText").innerHTML = `<i class="bi bi-clock-history me-1"></i>อัปเดตล่าสุด: <span class="fw-bold text-primary">${data.lastUpdated}</span>`;
+                }
+            })
+            .catch(err => console.error("Error fetching update time:", err));
+    }
+
+    // ฟังก์ชันสั่งให้ซิงค์ข้อมูลจาก API (ทำงานเมื่อกดปุ่ม)
+    function forceUpdateAPI() {
+        Swal.fire({
+            title: 'กำลังซิงค์ฐานข้อมูล...',
+            html: 'ระบบกำลังดึงข้อมูลจากศาลทั่วประเทศ<br><small class="text-muted">อาจใช้เวลาประมาณ 10 - 20 วินาที</small>',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        // ส่งคำสั่ง ?action=update ไปหา Google Apps Script
+        fetch(API_URL + "?action=update")
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: data.message });
+                    document.getElementById("lastUpdatedText").innerHTML = `<i class="bi bi-clock-history me-1"></i>อัปเดตล่าสุด: <span class="fw-bold text-primary">${data.lastUpdated}</span>`;
+                } else {
+                    Swal.fire('ข้อผิดพลาด', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('ข้อผิดพลาด!', 'การเชื่อมต่อขัดข้อง ไม่สามารถอัปเดตได้', 'error');
+            });
+    }
 
     // ฟังก์ชันแปลงรูปแบบวันที่
     function formatDate(dateString) {
@@ -136,6 +178,7 @@
                (d.getFullYear() + 543);
     }
 
+    // ฟังก์ชันค้นหาข้อมูล (ค้นหาจากชีต)
     function searchData() {
         const court = document.getElementById("inputCourt").value.trim();
         const prov = document.getElementById("inputProv").value.trim();
@@ -155,7 +198,8 @@
             didOpen: () => { Swal.showLoading(); }
         });
 
-        fetch(API_URL + "?q=" + encodeURIComponent(searchTerms))
+        // ส่งคำสั่งค้นหาตามปกติ
+        fetch(API_URL + "?action=search&q=" + encodeURIComponent(searchTerms))
             .then(response => response.json())
             .then(data => {
                 Swal.close();
@@ -202,6 +246,9 @@
             }
         });
     });
+
+    // ให้ทำงานทันทีเมื่อเปิดหน้าเว็บ (เพื่อดึงเวลาอัปเดตล่าสุด)
+    window.onload = checkLastUpdate;
 </script>
 
 </body>
