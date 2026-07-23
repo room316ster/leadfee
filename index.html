@@ -54,7 +54,18 @@
 
     // ฟังก์ชันค้นหาข้อมูล
     function searchData() {
-        const keyword = document.getElementById("searchInput").value;
+        // ดึงข้อความที่พิมพ์ และตัดช่องว่างซ้ายขวาออก (trim)
+        const keyword = document.getElementById("searchInput").value.trim();
+        
+        // 1. ตรวจสอบว่าผู้ใช้พิมพ์ข้อความหรือยัง
+        if (keyword === "") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'แจ้งเตือน',
+                text: 'กรุณาพิมพ์ชื่อศาล หรือเขต/อำเภอ ที่ต้องการค้นหาก่อนครับ'
+            });
+            return; // หยุดการทำงาน ไม่ส่ง Request ไปที่ Google Sheet
+        }
         
         // เรียกใช้ SweetAlert2 แสดงสถานะโหลด
         Swal.fire({
@@ -65,7 +76,7 @@
             }
         });
 
-        // ดึงข้อมูลจาก Google Sheets ผ่าน Web App API
+        // ดึงข้อมูลจาก Google Sheets ผ่าน Web App API เฉพาะคำที่ค้นหา
         fetch(API_URL + "?q=" + encodeURIComponent(keyword))
             .then(response => response.json())
             .then(data => {
@@ -74,7 +85,7 @@
                 const tableBody = document.getElementById("tableBody");
                 tableBody.innerHTML = ""; // ล้างข้อมูลเก่า
                 
-                if (data.status === "success" && data.data.length > 0) {
+                if (data.status === "success" && data.data && data.data.length > 0) {
                     document.getElementById("resultCount").innerText = "พบข้อมูลทั้งหมด " + data.total + " รายการ";
                     
                     // วนลูปสร้างแถวตาราง
@@ -88,19 +99,32 @@
                         </tr>`;
                         tableBody.innerHTML += row;
                     });
+                } else if (data.status === "error") {
+                    // กรณีฝั่ง Google Sheet แจ้ง Error กลับมา
+                    document.getElementById("resultCount").innerText = "";
+                    Swal.fire('ข้อผิดพลาดจากฐานข้อมูล', data.message, 'error');
                 } else {
                     document.getElementById("resultCount").innerText = "";
-                    tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">ไม่พบข้อมูลที่ค้นหา</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">ไม่พบข้อมูลที่ตรงกับ "${keyword}"</td></tr>`;
                 }
             })
             .catch(error => {
+                Swal.close();
                 Swal.fire('ข้อผิดพลาด!', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
                 console.error('Error:', error);
             });
     }
 
-    // โหลดข้อมูลทั้งหมดทันทีที่เปิดหน้าเว็บ (ถ้าต้องการให้หน้าว่างเปล่าตอนเริ่ม ให้ลบบรรทัดนี้ออก)
-    window.onload = searchData;
+    // 2. ปิดการโหลดข้อมูลอัตโนมัติ (ลบคำสั่ง window.onload เดิมออก)
+    // การปล่อยว่างไว้จะทำให้หน้าเว็บเริ่มต้นมาแบบคลีนๆ รอให้คนกดปุ่มค้นหาเอง
+
+    // 3. เพิ่มความสะดวก: ให้กดปุ่ม Enter ที่คีย์บอร์ดเพื่อค้นหาได้เลย ไม่ต้องใช้เมาส์คลิกปุ่ม
+    document.getElementById("searchInput").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            searchData();
+        }
+    });
 </script>
 
 </body>
